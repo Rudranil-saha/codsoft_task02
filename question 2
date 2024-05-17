@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Count Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Count Tool</h1>
+    <textarea id="textInput" rows="10" cols="50" placeholder="Enter your text here..."></textarea><br>
+    <input type="file" id="fileInput"><br>
+    <button onclick="countWords()">Count Words</button>
+    <div id="results"></div>
+
+    <script>
+        const stopWords = ["a", "an", "the", "and", "but", "or", "on", "in", "with", "is", "to", "it", "of", "for", "at", "by", "from"];
+
+        function countWords() {
+            let text = document.getElementById('textInput').value.trim();
+            const fileInput = document.getElementById('fileInput').files[0];
+
+            if (fileInput) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    text = event.target.result;
+                    processText(text);
+                };
+                reader.onerror = function() {
+                    alert("Error reading file.");
+                };
+                reader.readAsText(fileInput);
+            } else if (text) {
+                processText(text);
+            } else {
+                alert("Please enter text or select a file.");
+            }
+        }
+
+        function processText(text) {
+            const wordsArray = text.split(/\W+/).filter(word => word.length > 0);
+            const wordCount = wordsArray.length;
+            const uniqueWords = new Set(wordsArray.map(word => word.toLowerCase()).filter(word => !stopWords.includes(word)));
+            const wordFrequency = {};
+
+            wordsArray.forEach(word => {
+                const lowerCaseWord = word.toLowerCase();
+                if (!stopWords.includes(lowerCaseWord)) {
+                    wordFrequency[lowerCaseWord] = (wordFrequency[lowerCaseWord] || 0) + 1;
+                }
+            });
+
+            displayResults(wordCount, uniqueWords.size, wordFrequency);
+        }
+
+        function displayResults(totalWords, uniqueWordCount, wordFrequency) {
+            let resultHTML = `<p>Total words: ${totalWords}</p>`;
+            resultHTML += `<p>Unique words (excluding stop words): ${uniqueWordCount}</p>`;
+            resultHTML += `<h3>Word Frequency:</h3><ul>`;
+
+            for (const [word, frequency] of Object.entries(wordFrequency)) {
+                resultHTML += `<li>${word}: ${frequency}</li>`;
+            }
+            resultHTML += `</ul>`;
+
+            document.getElementById('results').innerHTML = resultHTML;
+        }
+    </script>
+</body>
+</html>
